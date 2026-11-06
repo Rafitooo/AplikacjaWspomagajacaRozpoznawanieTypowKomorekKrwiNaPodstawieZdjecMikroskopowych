@@ -5,44 +5,46 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
+    <div class="container" style="max-width: 600px; text-align: center;">
         <h1>Rozpoznawanie Typów Komórek Krwi</h1>
-        <p style="text-align: center;">Witaj w aplikacji wspomagającej rozpoznawanie typów komórek krwi na podstawie obrazów mikroskopowych</p>
+        <p style="margin-bottom: 25px;">Witaj w aplikacji wspomagającej rozpoznawanie typów komórek krwi na podstawie obrazów mikroskopowych</p>
 
         <form method="post" enctype="multipart/form-data">
-            <div class="split-layout">
+            <input type="file" name="file" id="fileInput" accept="image/*" required onchange="previewImage(event)">
+            <label for="fileInput" class="button" style="display: inline-block; margin-bottom: 20px">Wybierz plik</label>
 
-                <div class="column">
-                    <input type="file" name="file" id="fileInput" accept="image/*" required onchange="previewImage(event)">
-                    <label for="fileInput" class="button">Wybierz plik</label>
-
+                
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
                     <div class="image-box">
                         <img id="output-left"
                              {% if image_path %} src="{{ image_path }}" style="display: block;"
                              {% else %} style="display: none;" {% endif %}>
                     </div>
-
-                    <h3 id="fileNameText" style="color: black; margin-top: 20px; font-size: 16px;">
-                        Wybrany plik: {% if image_path %}{{ image_path.split('/') | last }}{% else %}brak{% endif %}
-                    </h3>
                 </div>
 
-                <div class="column">
-                    <button type="submit" class="button">Analizuj obraz</button>
+                <p id="fileNameText" style="color: black; margin-bottom: 20px; font-size: 15px;">
+                    Wybrany plik: {% if image_path %}{{ image_path.split('/') | last }}{% else %}brak{% endif %}
+                </p>
+                
+                <button type="submit" class="button" style="padding: 10px 25px; font-size: 16px; margin-bottom: 30px;">Analizuj obraz</button>
+         </form>
+                  
+        {% if result %}
+            <div style="background-color: #E3DCCB; padding: 20px; border-radius: 8px; border: 1px solid #A49694; text-align: left;">
+                <h3 style="margin-top: 0; text-align: center; border-bottom: 1px solid #A49694; padding-bottom: 10px;">Wynik analizy</h3>
+                <p style="font-size: 18px; margin: 10px 0;"><strong>Najbardziej prawdopodobny typ:</strong> <span style="color: #2b2b2b;">{{ result }}</span></p>
+                <p style="font-size: 16px; margin: 10px 0;"><strong>Pewność modelu:</strong> {{ confidence }}</p>
 
-                    <div class="image-box">
-                        {% if image_path %}
-                            <img src="{{ image_path }}" style="display: block;">
-                        {% endif %}
-                    </div>
-
-                    <h3 style="color: black; margin-top: 20px; font-size: 16px;">
-                        Typ komórki: {% if result %}{{ result }}{% endif %}
-                    </h3>
-                </div>
-
+                {% if alternatives %}
+                    <p style="font-size: 15px; margin-top: 20px; margin-bottom: 5px; font-weight: bold;">Inne możliwe opcje:</p>
+                    <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #444;">
+                        {% for alt_name, alt_conf in alternatives %}
+                            <li>{{ alt_name }} : {{ alt_conf }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             </div>
-        </form>
+        {% endif %}
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
