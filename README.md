@@ -88,7 +88,7 @@ W projekcie wykorzystano następujące technnologie i narzędzia:
 │   └── training.ipynb                           # Notatnik Jupyter z procesem trenowania i ewaluacją
 ├── thesis/                                      
 │   └── INŻYNIERKA (20).pdf                      # Aktualna wersja inżynierki
-├── interfejs_aplikacja.png                      # Zrzut ekranu działającej aplikacji z wynikiem analizy
-
+├── interfejs_aplikacja.png                      # Zrzut ekranu działającej aplikacji
+├── interfejs_aplikacja_wynik.png                # Zrzut ekranu działającej aplikacji z wynikiem analizy
 ├── README.md                                    # Dokumentacja projektu
 └── requirements.txt                             # Lista wymaganych bibliotek języka Python
