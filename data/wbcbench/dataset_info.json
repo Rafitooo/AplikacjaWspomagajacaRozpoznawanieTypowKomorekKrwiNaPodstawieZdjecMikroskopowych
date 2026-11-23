@@ -1,0 +1,138 @@
+{
+    "dataset": "WBCBench2026",
+    "configuration": "pristine",
+    "split_method": "official_patient_disjoint",
+    "source_splits": {
+        "phase1_train": "phase1_train",
+        "phase2_train": "phase2_train",
+        "phase2_eval": "val",
+        "phase2_test": "test"
+    },
+    "counts": {
+        "train": {
+            "BA": 494,
+            "BL": 2271,
+            "BNE": 451,
+            "EO": 979,
+            "LY": 9230,
+            "MMY": 433,
+            "MO": 3195,
+            "MY": 513,
+            "PC": 58,
+            "PLY": 13,
+            "PMY": 118,
+            "SNE": 15048,
+            "VLY": 382
+        },
+        "val": {
+            "BA": 60,
+            "BL": 412,
+            "BNE": 71,
+            "EO": 169,
+            "LY": 1571,
+            "MMY": 47,
+            "MO": 466,
+            "MY": 75,
+            "PC": 32,
+            "PLY": 1,
+            "PMY": 34,
+            "SNE": 2306,
+            "VLY": 106
+        },
+        "test": {
+            "BA": 303,
+            "BL": 885,
+            "BNE": 126,
+            "EO": 492,
+            "LY": 4299,
+            "MMY": 170,
+            "MO": 1533,
+            "MY": 204,
+            "PC": 12,
+            "PLY": 2,
+            "PMY": 40,
+            "SNE": 8178,
+            "VLY": 223
+        }
+    },
+    "totals": {
+        "train": 33185,
+        "val": 5350,
+        "test": 16467
+    },
+    "phase_counts": {
+        "phase1_train": {
+            "BA": 74,
+            "BL": 572,
+            "BNE": 111,
+            "EO": 181,
+            "LY": 2344,
+            "MMY": 98,
+            "MO": 741,
+            "MY": 108,
+            "PC": 2,
+            "PLY": 2,
+            "PMY": 42,
+            "SNE": 3913,
+            "VLY": 100
+        },
+        "phase2_train": {
+            "BA": 420,
+            "BL": 1699,
+            "BNE": 340,
+            "EO": 798,
+            "LY": 6886,
+            "MMY": 335,
+            "MO": 2454,
+            "MY": 405,
+            "PC": 56,
+            "PLY": 11,
+            "PMY": 76,
+            "SNE": 11135,
+            "VLY": 282
+        },
+        "val": {
+            "BA": 60,
+            "BL": 412,
+            "BNE": 71,
+            "EO": 169,
+            "LY": 1571,
+            "MMY": 47,
+            "MO": 466,
+            "MY": 75,
+            "PC": 32,
+            "PLY": 1,
+            "PMY": 34,
+            "SNE": 2306,
+            "VLY": 106
+        },
+        "test": {
+            "BA": 303,
+            "BL": 885,
+            "BNE": 126,
+            "EO": 492,
+            "LY": 4299,
+            "MMY": 170,
+            "MO": 1533,
+            "MY": 204,
+            "PC": 12,
+            "PLY": 2,
+            "PMY": 40,
+            "SNE": 8178,
+            "VLY": 223
+        }
+    },
+    "phase_totals": {
+        "phase1_train": 8288,
+        "phase2_train": 24897,
+        "val": 5350,
+        "test": 16467
+    },
+    "unique_patient_hashes": {
+        "phase1_train": 74,
+        "phase2_train": 222,
+        "val": 49,
+        "test": 148
+    },
+    "metadata_file": "image_metadata.csv"
+}

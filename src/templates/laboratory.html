@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rozpoznawanie Typów Komórek Krwi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Nagłówek i wybór widoku -->
+    <header class="app-header">
+        <div>
+            <h1>Rozpoznawanie Typów Komórek Krwi</h1>
+            <p>Analiza obrazów mikroskopowych</p>
+        </div>
+        <nav>
+            <a class="active" href="{{ url_for('home') }}">Laboratorium</a>
+            <a href="{{ url_for('developer') }}">Deweloper</a>
+        </nav>
+    </header>
+    <div class="container lab-layout">
+        <!-- Lewy panel: wczytywanie obrazu i historia -->
+        <aside class="panel">
+            <h2>Nowa analiza</h2>
+            <p class="hint">
+                Aktywny model: <strong>{{ active_model|upper }}</strong>
+            </p>
+            <form method="post" enctype="multipart/form-data"
+                  onsubmit="showLoading()">
+                <input type="file" name="file" id="fileInput"
+                       accept=".jpg,.jpeg,.png" required
+                       onchange="previewImage(event)">
+                <label class="button" for="fileInput">Wybierz plik</label>
+                <p id="fileNameText" class="hint">
+                    Wybrany plik:
+                    {% if selected %}
+                        {{ selected.filename }}
+                    {% else %}
+                        brak
+                    {% endif %}
+                </p>
+                <button type="submit" class="button" id="analyzeButton">
+                    Analizuj obraz
+                </button>
+            </form>
+            <h3>Historia analiz</h3>
+            <div class="history-list">
+                {% for item in history %}
+                    <a class="history-item"
+                       href="{{ url_for('home', analysis_id=item.id) }}">
+                        <strong>{{ class_names[item.prediction] }}</strong>
+                        <small>{{ item.date }} · {{ item.model|upper }}</small>
+                    </a>
+                {% else %}
+                    <p class="hint">Brak zapisanych analiz.</p>
+                {% endfor %}
+            </div>
+        </aside>
+        <!-- Środkowy panel: podgląd obrazu -->
+        <section class="panel preview-panel">
+            <h2>Podgląd obrazu</h2>
+            <div class="image-box">
+                <img id="output-left" alt="Obraz mikroskopowy"
+                     {% if image_path %}
+                         src="{{ image_path }}" style="display:block;"
+                     {% else %}
+                         style="display:none;"
+                     {% endif %}>
+            </div>
+            <div class="zoom-buttons">
+                <button type="button" class="button"
+                        onclick="changeZoom(-0.2)">−</button>
+                <button type="button" class="button"
+                        onclick="resetZoom()">Reset</button>
+                <button type="button" class="button"
+                        onclick="changeZoom(0.2)">+</button>
+            </div>
+        </section>
+        <!-- Prawy panel: wynik klasyfikacji -->
+        <aside class="panel">
+            <h2>Wynik analizy</h2>
+            {% if result %}
+                <div class="result-box">
+                    <p class="hint">Najbardziej prawdopodobny typ</p>
+                    <h3>{{ result }}</h3>
+                    <p>
+                        Wynik modelu:
+                        <strong>{{ confidence }}</strong>
+                    </p>
+                    <small>Klasyfikacja: {{ selected.model|upper }}</small>
+                </div>
+                <h3>Inne możliwe opcje</h3>
+                <ul>
+                    {% for alt_name, alt_conf in alternatives %}
+                        <li>{{ alt_name }}: {{ alt_conf }}</li>
+                    {% endfor %}
+                </ul>
+                <details>
+                    <summary>Pełny rozkład wyników (13 klas)</summary>
+                    {% for name, probability in all_probabilities %}
+                        <div class="probability-label">
+                            <span>{{ name }}</span>
+                            <strong>{{ "%.2f"|format(probability) }}%</strong>
+                        </div>
+                        <div class="probability-bar">
+                            <div style="width: {{ probability }}%"></div>
+                        </div>
+                    {% endfor %}
+                </details>
+                <h3>Ręczna korekta etykiety</h3>
+                <form method="post"
+                      action="{{ url_for('correct_label', analysis_id=selected.id) }}">
+                    <select name="new_label" required>
+                        <option value="" disabled
+                                {% if not selected.corrected_label %}selected{% endif %}>
+                            Wybierz klasę
+                        </option>
+                        {% for code, name in class_names.items() %}
+                            <option value="{{ code }}"
+                                    {% if selected.corrected_label == code %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="button">
+                        Zapisz korektę
+                    </button>
+                </form>
+                {% if selected.corrected_label %}
+                    <p class="correction">
+                        Zapisana etykieta:
+                        {{ class_names[selected.corrected_label] }}
+                    </p>
+                {% endif %}
+            {% else %}
+                <p class="hint">
+                    Wczytaj zdjęcie i kliknij „Analizuj obraz”.
+                </p>
+            {% endif %}
+        </aside>
+    </div>
+    <footer>
+        Prototyp wspomagający analizę - wynik nie zastępuje oceny specjalisty.
+    </footer>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

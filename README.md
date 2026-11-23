@@ -1,94 +1,305 @@
 # Aplikacja wspomagająca rozpoznawanie typów komórek krwi na podstawie obrazów mikroskopowych
 
-Projekt realizowany w ramach pracy inżynierskiej. Aplikacja internetowa stanowi narzędzie wspomagające diagnostykę medyczną, umożliwiając zautomatyzowaną klasyfikację białych krwinek (13 klas) z wykorzystaniem głębokich sieci neuronowych (ResNet50).
+Projekt realizowany w ramach pracy inżynierskiej na kierunku **Inżynieria Biomedyczna** (specjalność: Informatyka w Medycynie) na Politechnice Gdańskiej.
 
-- **Autor:** Rafał Kruszewski
-- **Nr indeksu:** 198259
-- **Uczelnia:** Politechnika Gdańska
-- **Kierunek:** Inżynieria Biomedyczna
-- **Specjalność:** Informatyka w Medycynie
+**Autor:** Rafał Kruszewski
 
----
+Aplikacja internetowa umożliwia klasyfikację obrazów białych krwinek do **13 klas** z wykorzystaniem sieci **ResNet18, ResNet50 i ResNet152**. System udostępnia dwa widoki: **Laboratorium** do analizy obrazów oraz **Deweloper** do przeglądania wyników uczenia i ewaluacji modeli.
 
-## Obecny stan projektu
-
-Obecnie aplikacja posiada w pełni działający interfejs użytkownika (GUI) zaimplementowany przy użyciu frameworka Flask oraz zintegrowany backend z wytrenowanym modelem **ResNet50** w bibliotece PyTorch. Poniżej znajdują się zrzuty ekranu prezentujące wygląd aplikacji:
-
-### Aktualny widok aplikacji z predykcją modelu:
-![Aktualny interfejs aplikacji](interfejs_aplikacja.png)
-![Aktualny interfejs aplikacji](interfejs_aplikacja_wynik.png)
-
-
-
-### Zrealizowane funkcjonalności:
-- **Przesyłanie plików:** Możliwość wyboru pliku ze zdjęciem mikroskopowym z dysku lokalnego (przycisk *Wybierz plik*).
-- **Podgląd na żywo:** Załadowane zdjęcie jest natychmiast wyświetlane w panelu podglądu wraz z nazwą wybranego pliku.
-- **Automatyczne przetwarzanie wstępne (Preprocessing):** Przesłany obraz jest automatycznie konwertowany do formatu RGB, skalowany do wymiarów `368x368` pikseli oraz normalizowany zgodnie ze statystykami zbioru ImageNet przed podaniem na wejście sieci.
-- **Klasyfikacja AI (ResNet50):** Po kliknięciu przycisku *Analizuj obraz* wytrenowany model klasyfikuje komórkę do jednej z 13 klas leukocytów (`BA`, `BL`, `BNE`, `EO`, `LY`, `MMY`, `MO`, `MY`, `PC`, `PLY`, `PMY`, `SNE`, `VLY`).
-- **Sekcja wyników (Top-3):** Aplikacja zwraca najbardziej prawdopodobny typ komórki (wraz z polską nazwą i pewnością procentową oraz wyświetla 2 kolejne najbardziej prawdopodobne alternatywy.
+> **Uwaga:** Projekt ma charakter badawczy i demonstracyjny. Wynik klasyfikacji nie zastępuje oceny specjalisty i nie powinien stanowić samodzielnej podstawy decyzji diagnostycznych.
 
 ---
 
-## Trening modelu i eksperymenty
+## Interfejs aplikacji
 
-W procesie uczenia wykorzystano technikę **Transfer Learningu** na bazie architektury **ResNet50** (wstępnie wytrenowanej na zbiorze ImageNet):
-- **Kompensacja niezbalansowania klas:** Zastosowano ważoną funkcję straty `CrossEntropyLoss` z wagami klas wygładzonymi pierwiastkiem kwadratowym oraz augmentację danych treningowych (losowe odbicia, rotacje, `ColorJitter`).
-- **Optymalizacja:** Wykorzystano optymalizator `AdamW` (`lr=0.0001`, `weight_decay=1e-4`), harmonogram wygaszania współczynnika uczenia `CosineAnnealingLR` oraz mechanizm *Early Stopping* (`patience=12`).
-- **Wyniki:** Model osiągnął wynik **Macro F1 = 79.58%** na zbiorze walidacyjnym oraz **Macro F1 = 76.98%** na zbiorze testowym.
+### Laboratorium
+
+Widok przeznaczony do analizy pojedynczych obrazów mikroskopowych. Umożliwia:
+
+- przesłanie obrazu w formacie JPG, JPEG lub PNG oraz jego podgląd i powiększanie;
+- klasyfikację obrazu aktywnym modelem ResNet;
+- wyświetlenie przewidzianej klasy wraz z wynikiem procentowym, dwóch kolejnych propozycji oraz rozkładu prawdopodobieństw dla wszystkich 13 klas;
+- przeglądanie historii wcześniejszych analiz;
+- zapisanie ręcznej korekty etykiety w historii analizy (korekta **nie uruchamia ponownego treningu**).
+
+![Laboratorium — wynik klasyfikacji obrazu](screenshots/interfejs_laboratorium_wynik.png)
+
+### Deweloper
+
+Widok służący do przeglądania zapisanych raportów treningu i ewaluacji. Dostępne są:
+
+- **dwa niezależne wybory modelu**: model do analizy wyników oraz model aktywny w laboratorium;
+- rozkład liczebności 13 klas w zbiorach treningowym, walidacyjnym i testowym;
+- krzywe uczenia: funkcja straty i Macro F1;
+- metryki ewaluacyjne: Macro F1, Precision, Recall i Balanced Accuracy;
+- macierze pomyłek;
+- porównanie wyników ResNet18, ResNet50 i ResNet152;
+- filtrowanie wyników według klasy leukocytu oraz zbioru walidacyjnego lub testowego.
+
+![Deweloper - ewaluacja wybranego modelu](screenshots/interfejs_deweloper_ewaluacja.png)
+
+![Deweloper - macierz pomyłek](screenshots/interfejs_deweloper_macierz_pomylek.png)
+
+![Deweloper - porównanie trzech architektur](screenshots/interfejs_deweloper_porownanie.png)
+
+![Deweloper - rozkład klas](screenshots/interfejs_deweloper_rozklad_klas.png)
 
 ---
 
-## Baza danych (WBCBench 2026)
+## Wykorzystany zbiór danych
 
-Do treningu i ewaluacji modelu wykorzystano zbiór danych pochodzący z konkursu **WBCBench 2026: Robust White Blood Cell Classification Under Class Imbalance and Domain Shift** (organizowanego w ramach konferencji *IEEE ISBI 2026*). Zbiór obejmuje łącznie 55 002 obrazy podzielone na zbiór treningowy (38 495), walidacyjny (8 245) oraz testowy (8 262).
+Do trenowania i oceny modeli wykorzystano **WBCBench2026**, wariant obrazów **`pristine`**, obejmujący 55 002 obrazy białych krwinek.
 
-- **Strona projektu i informacje o zbiorze:** [WBCBench 2026 Official Page](https://xudong-ma.github.io/WBCBench2026-Robust-White-Blood-Cell-Classification/)
-- **Dostępność:** Baza danych ma charakter **zamknięty** (nie jest publicznie otwarta do bezpośredniego pobrania). Aby uzyskać dostęp do obrazów i móc je pobrać (np. za pomocą przygotowanego skryptu `dataset_download.py`), konieczne jest wcześniejsze zgłoszenie się do organizatorów wyzwania i otrzymanie indywidualnego zaproszenia/autoryzacji. Ze względu na restrykcje licencyjne oraz rozmiar plików, folder `data/` nie jest dołączony do publicznego repozytorium.
+| Oficjalny podzbiór | Katalog w projekcie | Liczba obrazów | Wykorzystanie |
+|---|---|---:|---|
+| `phase1_train` | `phase1_train/` | 8 288 | Trening |
+| `phase2_train` | `phase2_train/` | 24 897 | Trening |
+| `phase2_eval` | `val/` | 5 350 | Walidacja |
+| `phase2_test` | `test/` | 16 467 | Test końcowy |
+| **Razem** | | **55 002** | |
+
+Podczas standardowego treningu **łączone są oba podzbiory treningowe**, czyli `phase1_train` i `phase2_train` (33 185 obrazów). Walidacja i test pozostają odrębne.
+
+Przetwarzanie danych korzysta również z identyfikatorów `patient_hash`, aby uwzględnić liczbę obrazów należących do poszczególnych przypadków.
+
+Rozpoznawane klasy:
+
+`BA`, `BL`, `BNE`, `EO`, `LY`, `MMY`, `MO`, `MY`, `PC`, `PLY`, `PMY`, `SNE`, `VLY`.
+
+**Źródło danych:** [WBCBench2026 — strona projektu](https://xudong-ma.github.io/WBCBench2026-Robust-White-Blood-Cell-Classification/)
+
+Skrypt pobierający korzysta z repozytorium `Xin-Tian/wbcbench2026` w serwisie Hugging Face i wymaga odpowiednich uprawnień dostępu. Ze względu na rozmiar danych i warunki dostępu obrazy nie są dołączone do repozytorium projektu.
 
 ---
 
-## Technologie
+## Trening modeli
 
-W projekcie wykorzystano następujące technnologie i narzędzia:
+Proces uczenia znajduje się w notatniku `src/training.ipynb`.
 
-- **Język programowania i backend:** Python 3.11, Flask, Jinja2
-- **Deep Learning i uczenie maszynowe:** PyTorch, Torchvision, ResNet50, Transfer Learning
-- **Przetwarzanie obrazów:** Pillow (PIL), torchvision.transforms
-- **Przygotowanie danych i trenowanie modelu:** torch.utils.data, DataLoader, ImageFolder, torch.nn, torch.optim
-- **Optymalizacja procesu uczenia:** AdamW, CosineAnnealingLR, Early Stopping, CrossEntropyLoss
-- **Analiza danych i obliczenia numeryczne:** NumPy, Scikit-learn (sklearn), collections.Counter
-- **Ewaluacja modelu:** Precision, Recall, F1-score, Macro F1, Balanced Accuracy, Confusion Matrix
-- **Wizualizacja danych i wyników:** Matplotlib, Seaborn
-- **Frontend:** HTML5, CSS3, JavaScript (Vanilla JS), FileReader API
-- **Obsługa plików i środowisko uruchomieniowe:** Flask, Jinja2, NVIDIA CUDA (opcjonalnie), CPU
-- **Narzędzia programistyczne:** Jupyter Notebook, tqdm, Git
+Wykorzystano metodę **Transfer Learning** z wagami wstępnie wytrenowanymi na ImageNet. Ostatnią warstwę klasyfikacyjną każdej sieci dostosowano do rozpoznawania 13 klas leukocytów.
+
+### Wykorzystane architektury
+
+- **ResNet18**
+- **ResNet50**
+- **ResNet152**
+
+### Przygotowanie danych i trening
+
+- zmiana rozmiaru obrazów do **368 × 368 pikseli**;
+- normalizacja zgodna ze statystykami ImageNet;
+- augmentacja obrazów treningowych;
+- optymalizator **AdamW**;
+- funkcja straty **CrossEntropyLoss** z `label_smoothing=0.05`;
+- **patient-aware WeightedRandomSampler** uwzględniający nierównowagę klas i liczbę obrazów pochodzących z poszczególnych przypadków;
+- harmonogram zmiany współczynnika uczenia **ReduceLROnPlateau**;
+- mechanizm **Early Stopping**;
+- obliczenia AMP przy wykorzystaniu GPU z obsługą CUDA.
+
+### Etapy treningu
+
+Proces uczenia składa się z dwóch etapów:
+
+**Etap 1 — trening całej sieci**
+
+Trenowane są wszystkie warstwy modelu. Proces trwa maksymalnie 30 epok i może zostać zakończony wcześniej przez mechanizm Early Stopping.
+
+**Etap 2 — dostrajanie klasyfikatora FC**
+
+Po zakończeniu pierwszego etapu wczytywany jest najlepszy zapisany checkpoint. Pozostałe warstwy zostają zamrożone, a dalszemu uczeniu podlega jedynie końcowa warstwa `fc`.
+
+Podczas dostrajania stosowane jest silniejsze balansowanie klas. Etap może trwać maksymalnie 10 epok, a mechanizm Early Stopping zatrzymuje go po 4 kolejnych epokach bez poprawy.
+
+Najlepszy model wybierany jest na podstawie wartości **Macro F1 uzyskanej na zbiorze walidacyjnym**.
+
+### Zapisywanie wyników
+
+Każdy model ma osobny katalog w `src/reports/`.
+
+Zapisywane są:
+
+- najlepsze wagi modelu (`.pth`);
+- parametry treningu (`training_params.json`);
+- historia uczenia (`training_history.json`);
+- wyniki ewaluacji walidacyjnej i testowej (`.json`);
+- wykresy funkcji straty i Macro F1;
+- macierze pomyłek dla zbiorów walidacyjnego i testowego.
+
+---
+
+## Wyniki na zbiorze testowym
+
+Wyniki modeli klasyfikujących **13 klas leukocytów**:
+
+| Model | Macro F1 | Macro Precision | Macro Recall | Balanced Accuracy |
+|---|---:|---:|---:|---:|
+| **ResNet18** | **68,80%** | **67,64%** | 71,35% | 71,35% |
+| **ResNet50** | 68,68% | 67,30% | 71,01% | 71,01% |
+| **ResNet152** | 67,97% | 65,59% | **72,01%** | **72,01%** |
+
+Wszystkie trzy architektury uzyskały zbliżone wyniki ogólne. Najwyższą wartość Macro F1 osiągnął model ResNet18.
+
+Skuteczność klasyfikacji jest jednak zróżnicowana w zależności od klasy leukocytu.
+
+Przykładowo model ResNet50 osiągnął wysokie wartości F1 dla klas:
+
+- **SNE:** 98,42%;
+- **EO:** 98,18%;
+- **LY:** 97,15%;
+- **BA:** 96,52%;
+- **MO:** 95,29%.
+
+Znacznie słabsze rezultaty uzyskano dla wybranych klas, w szczególności:
+
+- **BNE:** 46,46%;
+- **PC:** 0,00%;
+- **PLY:** 0,00%.
+
+Jedną z możliwych przyczyn jest nierównomierna liczebność danych treningowych oraz niewielka liczba niezależnych przypadków reprezentujących niektóre klasy.
+
+Uzyskane modele mają charakter eksperymentalny i nie są zwalidowane do samodzielnego zastosowania diagnostycznego.
+
+---
+
+## Uruchomienie projektu
+
+### Wymagania
+
+- Python 3.11;
+- biblioteki wymienione w `requirements.txt`;
+- zapisane wagi przynajmniej jednego wytrenowanego modelu.
+
+Aplikacja może wykonywać klasyfikację na CPU lub GPU obsługującym CUDA.
+
+### Instalacja
+
+1. Sklonuj repozytorium:
+
+   ```bash
+   git clone <adres-repozytorium>
+   ```
+
+2. Przejdź do katalogu projektu.
+
+3. Zainstaluj wymagane biblioteki:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Upewnij się, że w katalogu `src/reports/` znajdują się checkpointy modeli.
+
+   Model wskazany w `src/model_settings.json` musi posiadać odpowiedni plik wag. Domyślnie aplikacja korzysta z ResNet50.
+
+5. Uruchom aplikację:
+
+   ```bash
+   cd src
+   python app.py
+   ```
+
+6. Otwórz aplikację w przeglądarce:
+
+   **Laboratorium:**
+
+   http://127.0.0.1:5000/
+
+   **Deweloper:**
+
+   http://127.0.0.1:5000/developer
+
+### Uruchomienie treningu
+
+Aby ponownie przeprowadzić trening:
+
+1. Uzyskaj dostęp do zbioru WBCBench2026.
+2. Przygotuj dane
+3. Otwórz notatnik `src/training.ipynb`.
+4. Wybierz architekturę ResNet18, ResNet50 lub ResNet152.
+5. Uruchom wszystkie komórki notatnika.
+
+Notatnik powinien być wykonywany z katalogu `src/`, aby ścieżki danych i raportów były poprawne.
 
 ---
 
 ## Struktura projektu
 
 ```text
+.
 ├── data/
-│   └── wbcbench/                                # Zamknięty zbiór danych WBCBench 2026 (pomijany w repozytorium)
-│       ├── test/                                # Zbiór testowy (8 262 obrazy)
-│       ├── train/                               # Zbiór treningowy (38 495 obrazów)
-│       └── val/                                 # Zbiór walidacyjny (8 245 obrazów)
-├── src/                                         
-│   ├── static/                               
-│   │   ├── uploads/                             # Folder na przesłane przez użytkownika zdjęcia
-│   │   ├── script.js                            # Logika podglądu zdjęć w JavaScript
-│   │   └── style.css                            # Style wizualne CSS
-│   ├── templates/                               
-│   │   └── index.html                           # Główny interfejs użytkownika w HTML
-│   ├── .gitattributes                           # Konfiguracja statystyk języków dla platformy GitHub
-│   ├── app.py                                   # Główny plik serwera (Flask) z obsługą modelu ResNet50
-│   ├── best_resnet50_wbc.pth                    # Zapisane wagi wytrenowanego modelu ResNet50
-│   ├── confusion_matrix_resnet50_test.png       # Macierz pomyłek dla zbioru testowego
-│   ├── confusion_matrix_resnet50_validation.png # Macierz pomyłek dla zbioru walidacyjnego
-│   └── training.ipynb                           # Notatnik Jupyter z procesem trenowania i ewaluacją
-├── thesis/                                      
-│   └── INŻYNIERKA (20).pdf                      # Aktualna wersja inżynierki
-├── interfejs_aplikacja.png                      # Zrzut ekranu działającej aplikacji
-├── interfejs_aplikacja_wynik.png                # Zrzut ekranu działającej aplikacji z wynikiem analizy
-├── README.md                                    # Dokumentacja projektu
-└── requirements.txt                             # Lista wymaganych bibliotek języka Python
+│   └── wbcbench/
+│       ├── phase1_train/              # Pierwsza faza danych treningowych
+│       ├── phase2_train/              # Druga faza danych treningowych
+│       ├── val/                       # Walidacja (phase2_eval)
+│       ├── test/                      # Test końcowy (phase2_test)
+│       ├── dataset_info.json         # Informacje o zbiorze i liczebnościach klas
+│       └── image_metadata.csv        # Metadane obrazów, w tym patient_hash
+│
+├── src/
+│   ├── app.py                        # Serwer Flask i obsługa klasyfikacji
+│   │
+│   ├── training.ipynb                # Trening i ewaluacja modeli
+│   ├── history.json                  # Historia przeprowadzonych analiz
+│   ├── model_settings.json           # Ustawienia aktywnego modelu
+│   │
+│   ├── reports/
+│   │   ├── resnet18/                 # Raporty i checkpoint ResNet18
+│   │   ├── resnet50/                 # Raporty i checkpoint ResNet50
+│   │   └── resnet152/                # Raporty i checkpoint ResNet152
+│   │
+│   ├── static/
+│   │   ├── uploads/                  # Obrazy przesłane przez użytkownika
+│   │   ├── style.css                 # Style interfejsu
+│   │   └── script.js                 # Obsługa interfejsu w JavaScript
+│   │
+│   └── templates/
+│       ├── laboratory.html           # Panel laboratorium
+│       └── developer.html            # Panel dewelopera
+│
+├── screenshots/
+│   ├── interfejs_laboratorium_wynik.png
+│   ├── interfejs_laboratorium_historia.png
+│   ├── interfejs_deweloper_ewaluacja.png
+│   ├── interfejs_deweloper_macierz_pomylek.png
+│   ├── interfejs_deweloper_porownanie.png
+│   └── interfejs_deweloper_rozklad_klas.png
+│
+├── thesis/                            # Materiały pracy inżynierskiej
+├── README.md                          # Dokumentacja projektu
+└── requirements.txt                   # Wymagane biblioteki
+```
+
+### Przykładowa zawartość folderu raportów
+
+```text
+src/reports/resnet50/
+├── best_resnet50_wbc.pth
+├── training_params.json
+├── training_history.json
+├── validation_metrics.json
+├── test_metrics.json
+├── loss.png
+├── f1.png
+├── confusion_matrix_validation.png
+└── confusion_matrix_test.png
+```
+
+---
+
+## Wykorzystane technologie
+
+| Obszar | Technologie |
+|---|---|
+| Język programowania | Python 3.11 |
+| Backend | Flask, Jinja2 |
+| Deep Learning | PyTorch, Torchvision |
+| Architektury sieci | ResNet18, ResNet50, ResNet152 |
+| Przetwarzanie obrazów | Pillow, torchvision.transforms |
+| Analiza danych | NumPy, scikit-learn |
+| Wizualizacja | Matplotlib, Seaborn |
+| Frontend | HTML5, CSS3, JavaScript |
+| Środowisko eksperymentalne | Jupyter Notebook |
+| Przyspieszenie obliczeń | NVIDIA CUDA, AMP |
+| Kontrola wersji | Git |
+
+---

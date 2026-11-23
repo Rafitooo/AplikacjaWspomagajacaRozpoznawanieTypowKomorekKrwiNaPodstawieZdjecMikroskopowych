@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rozpoznawanie Typów Komórek Krwi - Deweloper</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Nagłówek i wybór widoku -->
+    <header class="app-header">
+        <div>
+            <h1>Rozpoznawanie Typów Komórek Krwi</h1>
+            <p>Analiza zbioru danych i modeli</p>
+        </div>
+        <nav>
+            <a href="{{ url_for('home') }}">Laboratorium</a>
+            <a class="active" href="{{ url_for('developer') }}">Deweloper</a>
+        </nav>
+    </header>
+    <div class="container dev-layout">
+        <!-- Lewy panel: wybór modeli i parametry -->
+        <aside class="panel">
+            <h2>Ustawienia</h2>
+            <!-- Model, którego wyniki deweloper przegląda -->
+            <form method="get" action="{{ url_for('developer') }}">
+                <input type="hidden" name="tab" value="{{ tab }}">
+                <input type="hidden" name="cell" value="{{ selected_class }}">
+                <input type="hidden" name="split" value="{{ split }}">
+                <label for="model">Model do analizy wyników</label>
+                <select id="model" name="model" onchange="this.form.submit()">
+                    <option value="resnet18"
+                            {% if model_name == 'resnet18' %}selected{% endif %}>
+                        ResNet18
+                    </option>
+                    <option value="resnet50"
+                            {% if model_name == 'resnet50' %}selected{% endif %}>
+                        ResNet50
+                    </option>
+                    <option value="resnet152"
+                            {% if model_name == 'resnet152' %}selected{% endif %}>
+                        ResNet152
+                    </option>
+                </select>
+            </form>
+            <!-- Model, który będzie klasyfikować zdjęcia w laboratorium -->
+            <form method="post" action="{{ url_for('set_active_model') }}">
+                <input type="hidden" name="view_model" value="{{ model_name }}">
+                <input type="hidden" name="tab" value="{{ tab }}">
+                <input type="hidden" name="cell" value="{{ selected_class }}">
+                <input type="hidden" name="split" value="{{ split }}">
+                <label for="active_model">Model używany przez laboratorium</label>
+                <select id="active_model" name="active_model">
+                    <option value="resnet18"
+                            {% if active_model == 'resnet18' %}selected{% endif %}>
+                        ResNet18
+                    </option>
+                    <option value="resnet50"
+                            {% if active_model == 'resnet50' %}selected{% endif %}>
+                        ResNet50
+                    </option>
+                    <option value="resnet152"
+                            {% if active_model == 'resnet152' %}selected{% endif %}>
+                        ResNet152
+                    </option>
+                </select>
+                <button type="submit" class="button">
+                    Zastosuj w laboratorium
+                </button>
+            </form>
+            <h3>Parametry treningu</h3>
+            {% if parameters %}
+                <p>Epoki: <strong>{{ parameters.epochs }}</strong></p>
+                <p>Batch size: <strong>{{ parameters.batch_size }}</strong></p>
+                <p>Learning rate: <strong>{{ parameters.learning_rate }}</strong></p>
+                <p>Weight decay: <strong>{{ parameters.weight_decay }}</strong></p>
+                <p>Early stopping: <strong>{{ parameters.patience }}</strong></p>
+            {% else %}
+                <p class="hint">
+                    Raport treningu nie jest jeszcze dostępny.
+                </p>
+            {% endif %}
+        </aside>
+        <!-- Środkowy panel: zakładki i wykresy -->
+        <main class="panel">
+            <div class="tabs">
+                <a class="{% if tab == 'classes' %}active{% endif %}"
+                   href="{{ url_for('developer', model=model_name, tab='classes', cell=selected_class, split=split) }}">
+                    Rozkład klas
+                </a>
+                <a class="{% if tab == 'curves' %}active{% endif %}"
+                   href="{{ url_for('developer', model=model_name, tab='curves', cell=selected_class, split=split) }}">
+                    Krzywe uczenia
+                </a>
+                <a class="{% if tab == 'evaluation' %}active{% endif %}"
+                   href="{{ url_for('developer', model=model_name, tab='evaluation', cell=selected_class, split=split) }}">
+                    Ewaluacja
+                </a>
+                <a class="{% if tab == 'confusion' %}active{% endif %}"
+                   href="{{ url_for('developer', model=model_name, tab='confusion', cell=selected_class, split=split) }}">
+                    Macierz pomyłek
+                </a>
+                <a class="{% if tab == 'compare' %}active{% endif %}"
+                   href="{{ url_for('developer', model=model_name, tab='compare', cell=selected_class, split=split) }}">
+                    Porównanie
+                </a>
+            </div>
+            <!-- Zakładka: rozkład klas -->
+            {% if tab == 'classes' %}
+                <h2>Rozkład klas WBCBench2026</h2>
+                {% if dataset %}
+                    <div class="metrics-row">
+                        <div class="metric">
+                            Trening <strong>{{ dataset.totals.train }}</strong>
+                        </div>
+                        <div class="metric">
+                            Walidacja <strong>{{ dataset.totals.val }}</strong>
+                        </div>
+                        <div class="metric">
+                            Test <strong>{{ dataset.totals.test }}</strong>
+                        </div>
+                    </div>
+                    <table>
+                        <tr>
+                            <th>Klasa</th>
+                            <th>Trening</th>
+                            <th>Walidacja</th>
+                            <th>Test</th>
+                        </tr>
+                        {% for code in classes %}
+                            {% if selected_class == 'all' or selected_class == code %}
+                                <tr>
+                                    <td>{{ code }}</td>
+                                    <td>{{ dataset.counts.train.get(code, 0) }}</td>
+                                    <td>{{ dataset.counts.val.get(code, 0) }}</td>
+                                    <td>{{ dataset.counts.test.get(code, 0) }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
+                    <h3>Liczebność klas w treningu</h3>
+                    {% for code in classes %}
+                        {% if selected_class == 'all' or selected_class == code %}
+                            <div class="distribution-row">
+                                <span>{{ code }}</span>
+
+                                <div class="probability-bar">
+                                    <div style="width: {{ dataset.counts.train.get(code, 0) / max_count * 100 }}%"></div>
+                                </div>
+                                <strong>{{ dataset.counts.train.get(code, 0) }}</strong>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p class="hint">Brak pliku dataset_info.json.</p>
+                {% endif %}
+            <!-- Zakładka: krzywe uczenia -->
+            {% elif tab == 'curves' %}
+                <h2>Krzywe uczenia - {{ model_name|upper }}</h2>
+                {% if training_history %}
+                    <p>Wykonane epoki: {{ training_history|length }}</p>
+                    <img class="chart-image"
+                         src="{{ url_for('report_image', model_name=model_name, filename='loss.png') }}"
+                         alt="Wykres funkcji straty">
+                    <img class="chart-image"
+                         src="{{ url_for('report_image', model_name=model_name, filename='f1.png') }}"
+                         alt="Wykres Macro F1">
+                    {% if selected_stats %}
+                        <p>
+                            F1 wybranej klasy {{ selected_class }} w ewaluacji:
+                            <strong>{{ selected_stats.f1 }}%</strong>
+                        </p>
+                        <p class="hint">
+                            Krzywe pokazują metryki całego modelu,
+                            nie pojedynczej klasy.
+                        </p>
+                    {% endif %}
+                {% else %}
+                    <p class="hint">Brak zapisanych wykresów treningu.</p>
+                {% endif %}
+            <!-- Zakładka: ewaluacja modelu -->
+            {% elif tab == 'evaluation' %}
+                <h2>Ewaluacja - {{ model_name|upper }}</h2>
+                {% if metrics %}
+                    <div class="metrics-row">
+                        {% if selected_stats %}
+                            <div class="metric">
+                                Precision
+                                <strong>{{ selected_stats.precision }}%</strong>
+                            </div>
+                            <div class="metric">
+                                Recall
+                                <strong>{{ selected_stats.recall }}%</strong>
+                            </div>
+                            <div class="metric">
+                                F1-score
+                                <strong>{{ selected_stats.f1 }}%</strong>
+                            </div>
+                            <div class="metric">
+                                Liczba obrazów
+                                <strong>{{ selected_stats.support }}</strong>
+                            </div>
+                        {% else %}
+                            <div class="metric">
+                                Macro F1
+                                <strong>{{ '%.2f'|format(metrics.macro_f1) }}%</strong>
+                            </div>
+                            <div class="metric">
+                                Precision
+                                <strong>{{ '%.2f'|format(metrics.precision) }}%</strong>
+                            </div>
+                            <div class="metric">
+                                Recall
+                                <strong>{{ '%.2f'|format(metrics.recall) }}%</strong>
+                            </div>
+                            <div class="metric">
+                                Balanced Accuracy
+                                <strong>{{ '%.2f'|format(metrics.balanced_accuracy) }}%</strong>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="hint">Brak raportu ewaluacji.</p>
+                {% endif %}
+            <!-- Zakładka: macierz pomyłek -->
+            {% elif tab == 'confusion' %}
+                <h2>Macierz pomyłek - {{ model_name|upper }}</h2>
+                {% if metrics %}
+                    {% if selected_stats %}
+                        <p>
+                            Rzeczywista klasa:
+                            <strong>{{ selected_class }}</strong>
+                        </p>
+                        <p>
+                            Poprawnie: {{ selected_stats.correct }} |
+                            Błędnie: {{ selected_stats.errors }}
+                        </p>
+                        <table>
+                            <tr>
+                                <th>Przewidziana klasa</th>
+                                <th>Liczba obrazów</th>
+                            </tr>
+                            {% for code, count in confusion_row %}
+                                <tr>
+                                    <td>{{ code }}</td>
+                                    <td>{{ count }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    {% else %}
+                        <img class="chart-image"
+                             src="{{ url_for('report_image',
+                                 model_name=model_name,
+                                 filename='confusion_matrix_' ~ split ~ '.png') }}"
+                             alt="Macierz pomyłek">
+                    {% endif %}
+                {% else %}
+                    <p class="hint">Brak macierzy pomyłek.</p>
+                {% endif %}
+            <!-- Zakładka: porównanie modeli -->
+            {% elif tab == 'compare' %}
+                <h2>Porównanie ResNet18, ResNet50 i ResNet152</h2>
+                <div class="table-scroll">
+                    <table>
+                        <tr>
+                            <th>Model</th>
+                            <th>F1</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>Balanced Accuracy</th>
+                        </tr>
+                        {% for name, report in comparison.items() %}
+                            <tr>
+                                <td>{{ name|upper }}</td>
+                                {% if report %}
+                                    {% if selected_class == 'all' %}
+                                        <td>{{ '%.2f'|format(report.macro_f1) }}%</td>
+                                        <td>{{ '%.2f'|format(report.precision) }}%</td>
+                                        <td>{{ '%.2f'|format(report.recall) }}%</td>
+                                        <td>{{ '%.2f'|format(report.balanced_accuracy) }}%</td>
+                                    {% else %}
+                                        <td>{{ '%.2f'|format(report.classes[selected_class].f1) }}%</td>
+                                        <td>{{ '%.2f'|format(report.classes[selected_class].precision) }}%</td>
+                                        <td>{{ '%.2f'|format(report.classes[selected_class].recall) }}%</td>
+                                        <td>-</td>
+                                    {% endif %}
+                                {% else %}
+                                    <td colspan="4">Brak raportu</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% endif %}
+        </main>
+        <!-- Prawy panel: filtry klas i zbioru -->
+        <aside class="panel">
+            <h2>Filtry</h2>
+            <form method="get" action="{{ url_for('developer') }}">
+                <input type="hidden" name="model" value="{{ model_name }}">
+                <input type="hidden" name="tab" value="{{ tab }}">
+                <label for="cell">Klasa leukocytów</label>
+                <select id="cell" name="cell" onchange="this.form.submit()">
+                    <option value="all"
+                            {% if selected_class == 'all' %}selected{% endif %}>
+                        Wszystkie klasy
+                    </option>
+                    {% for code in classes %}
+                        <option value="{{ code }}"
+                                {% if selected_class == code %}selected{% endif %}>
+                            {{ class_names[code] }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <label for="split">Zbiór ewaluacyjny</label>
+                <select id="split" name="split" onchange="this.form.submit()">
+                    <option value="test"
+                            {% if split == 'test' %}selected{% endif %}>
+                        Testowy
+                    </option>
+                    <option value="validation"
+                            {% if split == 'validation' %}selected{% endif %}>
+                        Walidacyjny
+                    </option>
+                </select>
+            </form>
+            {% if selected_stats %}
+                <div class="class-summary">
+                    <h3>{{ class_names[selected_class] }}</h3>
+                    <p>Precision: {{ selected_stats.precision }}%</p>
+                    <p>Recall: {{ selected_stats.recall }}%</p>
+                    <p>F1: {{ selected_stats.f1 }}%</p>
+                    <p>
+                        Poprawne: {{ selected_stats.correct }}
+                        / {{ selected_stats.support }}
+                    </p>
+                </div>
+            {% else %}
+                <p class="hint">
+                    Wybierz klasę, aby zobaczyć jej szczegóły.
+                </p>
+            {% endif %}
+        </aside>
+    </div>
+</body>

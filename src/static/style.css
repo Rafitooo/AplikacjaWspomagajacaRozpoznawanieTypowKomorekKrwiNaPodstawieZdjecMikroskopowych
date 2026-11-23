@@ -1,23 +1,24 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #A49694;
-    color: black;
+    background-color: #F3F6FA;
+    color: #273449;
     margin: 0;
-    padding: 50px;
+    padding: 0;
 }
 .container {
-    max-width: 800px;
-    margin: 0 auto;
-    background: #EDE7D9;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    max-width: 1500px;
+    margin: 24px auto;
+    background: transparent;
+    padding: 0 20px;
+    border-radius: 0;
+    box-shadow: none;
 }
 h1 {
-    color: black;
-    text-align: center;
-    border-bottom: 2px solid #A49694;
-    padding-bottom: 10px;
+    color: #1D4E89;
+    text-align: left;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 .split-layout {
     display: flex;
@@ -32,36 +33,287 @@ h1 {
     align-items: center;
 }
 .image-box {
-    width: 300px;
-    height: 300px;
-    border: 2px dashed #A49694;
-    margin-top: 20px;
+    width: 100%;
+    height: 450px;
+    border: 1px dashed #B5C4D6;
+    border-radius: 10px;
+    margin-top: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #E3DCCB;
+    background-color: #F1F5F9;
     overflow: hidden;
     padding: 0;
 }
 .image-box img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
 }
 .button {
-    background-color: #EFEFEF;
-    color: black;
-    border: 1px solid #767676;
-    padding: 5px 15px;
-    border-radius: 3px;
+    background-color: #2864B4;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
     text-align: center;
 }
 .button:hover {
-    background-color: #E5E5E5;
+    background-color: #1B4D8B;
 }
 input[type="file"] {
     display: none;
+}
+.app-header {
+    background: white;
+    padding: 18px 28px;
+    border-bottom: 1px solid #DFE5EF;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+.app-header h1 {
+    font-size: 23px;
+}
+.app-header p {
+    color: #64748B;
+    font-size: 13px;
+    margin: 5px 0 0;
+}
+.app-header nav {
+    display: flex;
+    gap: 8px;
+}
+.app-header nav a {
+    padding: 10px 15px;
+    color: #344054;
+    border-radius: 8px;
+    text-decoration: none;
+}
+.app-header nav a.active,
+.app-header nav a:hover {
+    background: #E9F1FD;
+    color: #1D4E89;
+}
+.lab-layout,
+.dev-layout {
+    display: grid;
+    gap: 18px;
+}
+.lab-layout {
+    grid-template-columns: 260px minmax(0, 1fr) 335px;
+}
+.dev-layout {
+    grid-template-columns: 260px minmax(0, 1fr) 255px;
+}
+.panel {
+    min-width: 0;
+    padding: 22px;
+    background: white;
+    border: 1px solid #DFE5EF;
+    border-radius: 12px;
+}
+.panel h2 {
+    font-size: 18px;
+    margin: 0 0 20px;
+}
+.panel h3 {
+    font-size: 15px;
+    margin-top: 24px;
+}
+.hint {
+    color: #64748B;
+    font-size: 13px;
+}
+.panel label {
+    display: inline-block;
+    margin-bottom: 8px;
+}
+.panel .button {
+    margin-bottom: 8px;
+}
+.panel button.button {
+    font-family: inherit;
+}
+.panel select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    background: white;
+}
+.history-list {
+    max-height: 480px;
+    overflow-y: auto;
+}
+.history-item {
+    display: block;
+    margin-bottom: 8px;
+    padding: 12px;
+    background: #F3F6FA;
+    border-radius: 8px;
+    color: #273449;
+    text-decoration: none;
+}
+.history-item:hover {
+    background: #E9F1FD;
+}
+.history-item small {
+    display: block;
+    color: #64748B;
+    margin-top: 5px;
+}
+.preview-panel {
+    text-align: center;
+}
+.preview-panel .image-box {
+    max-width: 100%;
+}
+.image-box img {
+    transition: transform 0.15s;
+}
+.zoom-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+.result-box {
+    background: #ECF3FE;
+    border-radius: 10px;
+    padding: 15px;
+}
+.result-box h3 {
+    color: #1D4E89;
+    font-size: 21px;
+    margin: 8px 0;
+}
+.panel details {
+    margin: 22px 0;
+    padding: 13px;
+    border: 1px solid #DFE5EF;
+    border-radius: 8px;
+}
+.panel summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+.probability-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    margin: 12px 0 5px;
+}
+.probability-bar {
+    height: 9px;
+    background: #E6ECF4;
+    border-radius: 7px;
+    overflow: hidden;
+}
+.probability-bar div {
+    height: 100%;
+    background: #377ACC;
+}
+.correction {
+    padding: 10px;
+    background: #E8F5EC;
+    border-radius: 8px;
+}
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 24px;
+}
+.tabs a {
+    padding: 9px 11px;
+    border-radius: 7px;
+    background: #EEF3FA;
+    color: #1D4E89;
+    text-decoration: none;
+    font-size: 13px;
+}
+.tabs a.active,
+.tabs a:hover {
+    background: #D7E7FA;
+}
+.metrics-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+.metric {
+    padding: 15px;
+    background: #EFF5FC;
+    border-radius: 9px;
+    font-size: 13px;
+}
+.metric strong {
+    display: block;
+    color: #1D4E89;
+    font-size: 21px;
+    margin-top: 7px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 15px 0;
+}
+th,
+td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #E4E9F1;
+}
+th {
+    background: #F3F6FA;
+}
+.table-scroll {
+    overflow-x: auto;
+}
+.distribution-row {
+    display: grid;
+    grid-template-columns: 45px minmax(0, 1fr) 60px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+.chart-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 20px auto;
+}
+.class-summary {
+    margin-top: 24px;
+    padding: 12px;
+    background: #EFF5FC;
+    border-radius: 8px;
+}
+footer {
+    padding: 20px;
+    color: #64748B;
+    text-align: center;
+    font-size: 12px;
+}
+@media (max-width: 1100px) {
+    .lab-layout,
+    .dev-layout {
+        grid-template-columns: 1fr;
+    }
+    .app-header {
+        flex-direction: column;
+    }
+    .image-box {
+        height: 350px;
+    }
 }

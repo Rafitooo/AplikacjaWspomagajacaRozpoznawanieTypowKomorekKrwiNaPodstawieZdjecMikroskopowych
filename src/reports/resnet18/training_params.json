@@ -1,0 +1,31 @@
+{
+    "model": "resnet18",
+    "epochs": 30,
+    "epochs_completed": 27,
+    "batch_size": 32,
+    "learning_rate": 3e-05,
+    "head_learning_rate": 0.0003,
+    "weight_decay": 0.0005,
+    "patience": 10,
+    "image_size": 368,
+    "sampler": "patient_aware_WeightedRandomSampler",
+    "sampling_power": 0.25,
+    "patient_power": 0.5,
+    "train_phases": [
+        "phase1_train",
+        "phase2_train"
+    ],
+    "train_images": 33185,
+    "head_tuning_enabled": true,
+    "loss_function": "CrossEntropyLoss(label_smoothing=0.05)",
+    "scheduler": "ReduceLROnPlateau",
+    "amp": true,
+    "head_finetuning": {
+        "enabled": true,
+        "epochs": 10,
+        "learning_rate": 0.0001,
+        "class_power": 0.45,
+        "patient_power": 0.7,
+        "patience": 4
+    }
+}
